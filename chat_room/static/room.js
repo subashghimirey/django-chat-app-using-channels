@@ -16,6 +16,12 @@ function onlineUsersSelectorAdd(value) {
     onlineUsersSelector.appendChild(newOption);
 }
 
+onlineUsersSelector.onchange = function() {
+    chatMessageInput.value = "/pm " + onlineUsersSelector.value + " ";
+    onlineUsersSelector.value = null;
+    chatMessageInput.focus();
+};
+
 // removes an option from 'onlineUsersSelector'
 function onlineUsersSelectorRemove(value) {
     let oldOption = document.querySelector("option[value='" + value + "']");
@@ -66,6 +72,26 @@ function connect() {
         switch (data.type) {
             case "chat_message":
                 chatLog.value += data.user + ": " + data.message + "\n"; 
+                break;
+             case "user_list":
+                for (let i = 0; i < data.users.length; i++) {
+                    onlineUsersSelectorAdd(data.users[i]);
+                }
+                break;
+            case "user_join":
+                chatLog.value += data.user + " joined the room.\n";
+                onlineUsersSelectorAdd(data.user);
+                break;
+            case "user_leave":
+                chatLog.value += data.user + " left the room.\n";
+                onlineUsersSelectorRemove(data.user);
+                break;      
+                
+            case "private_message":
+                chatLog.value += "PM from " + data.user + ": " + data.message + "\n";
+                break;
+            case "private_message_delivered":
+                chatLog.value += "PM to " + data.target + ": " + data.message + "\n";
                 break;
             default:
                 console.error("Unknown message type!");
